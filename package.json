@@ -1,0 +1,21 @@
+{
+  "name": "claude-architect-lab",
+  "version": "1.0.0",
+  "description": "Hands-on lab for the Claude Certified Architect — Foundations certification",
+  "type": "module",
+  "scripts": {
+    "m1:hello": "node src/module-01-api-fundamentals/01-hello.js",
+    "m1:roles": "node src/module-01-api-fundamentals/02-message-roles.js",
+    "m1:stop": "node src/module-01-api-fundamentals/03-stop-reason.js",
+    "m1:loop": "node src/module-01-api-fundamentals/04-mini-loop.js",
+    "m1:system": "node src/module-01-api-fundamentals/05-system-prompt.js",
+    "m1:context": "node src/module-01-api-fundamentals/06-context-window.js",
+    "m2:desc": "node src/module-02-tools/01-tool-descriptions.js",
+    "m2:choice": "node src/module-02-tools/02-tool-choice.js",
+    "m2:schema": "node src/module-02-tools/03-json-schema.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.5"
+  }
+}
