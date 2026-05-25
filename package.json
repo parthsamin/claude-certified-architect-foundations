@@ -12,7 +12,8 @@
     "m1:context": "node src/module-01-api-fundamentals/06-context-window.js",
     "m2:desc": "node src/module-02-tools/01-tool-descriptions.js",
     "m2:choice": "node src/module-02-tools/02-tool-choice.js",
-    "m2:schema": "node src/module-02-tools/03-json-schema.js"
+    "m2:schema": "node src/module-02-tools/03-json-schema.js",
+    "m2:errors": "node src/module-02-tools/04-errors.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
