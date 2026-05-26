@@ -12,8 +12,9 @@ Use these for fast review; use the `src/` exercises for hands-on practice.
 |---|---|---|
 | 1 — Claude API Fundamentals | [module-01-api-fundamentals.md](module-01-api-fundamentals.md) | Foundations (all) |
 | 2 — Tools and `tool_use` | [module-02-tools.md](module-02-tools.md) | D2, D4 |
+| 3 — Agent SDK and Agentic Loops | [module-03-agent-sdk.md](module-03-agent-sdk.md) | D1 |
 
-_Modules 3–13 + capstone notes land here as the course progresses._
+_Modules 4–13 + capstone notes land here as the course progresses._
 
 ## Exam at a glance
 

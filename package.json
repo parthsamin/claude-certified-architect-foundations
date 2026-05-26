@@ -13,7 +13,12 @@
     "m2:desc": "node src/module-02-tools/01-tool-descriptions.js",
     "m2:choice": "node src/module-02-tools/02-tool-choice.js",
     "m2:schema": "node src/module-02-tools/03-json-schema.js",
-    "m2:errors": "node src/module-02-tools/04-errors.js"
+    "m2:errors": "node src/module-02-tools/04-errors.js",
+    "m3:loop": "node src/module-03-agent-sdk/01-agentic-loop.js",
+    "m3:def": "node src/module-03-agent-sdk/02-agent-definition.js",
+    "m3:coord": "node src/module-03-agent-sdk/03-coordinator.js",
+    "m3:task": "node src/module-03-agent-sdk/04-task-tool.js",
+    "m3:hooks": "node src/module-03-agent-sdk/05-hooks.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
