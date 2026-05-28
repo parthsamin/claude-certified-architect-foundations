@@ -117,8 +117,6 @@ _What you'll observe:_ invoice extraction across attempts — attempt 1 has a wr
 
 ---
 
----
-
 ## Module 3 — Agent SDK and Agentic Loops
 
 Formalize the hand-rolled loop into a reusable `Agent` abstraction, then compose multiple agents into a hub-and-spoke system: a coordinator that decomposes work, delegates to subagents via a `Task` tool, parallelizes independent work, and gates dangerous tool calls with deterministic hooks. By the end you have the building blocks of the capstone.
@@ -155,8 +153,6 @@ _What you'll observe:_ a refund agent asked to issue $199 (allowed) and $999 (bl
 - Hub-and-spoke: coordinator decomposes → decides → delegates → aggregates → validates → communicates. Subagents have **isolated context** — what the coordinator doesn't pass, the subagent can't see.
 - The `Task` tool is the polymorphic delegation primitive. Parallel spawning happens when the coordinator emits multiple `tool_use` blocks in one assistant turn — opportunistic, not automatic.
 - Hooks (`PreToolUse` / `PostToolUse`) are deterministic enforcement. For any financial / legal / safety guardrail, use a hook — not a prompt.
-
----
 
 ---
 
@@ -204,7 +200,7 @@ Output goes to stdout. Each script reads `ANTHROPIC_API_KEY` from `.env` via `do
 
 ## What's next
 
-Modules 3–13 and the capstone are upcoming — each will land here with its own exercises and notes as the lab grows.
+Modules 5–13 and the capstone are upcoming — each will land here with its own exercises and notes as the lab grows.
 
 ## Revision notes
 
