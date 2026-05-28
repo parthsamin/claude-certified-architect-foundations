@@ -18,10 +18,16 @@
     "m3:def": "node src/module-03-agent-sdk/02-agent-definition.js",
     "m3:coord": "node src/module-03-agent-sdk/03-coordinator.js",
     "m3:task": "node src/module-03-agent-sdk/04-task-tool.js",
-    "m3:hooks": "node src/module-03-agent-sdk/05-hooks.js"
+    "m3:hooks": "node src/module-03-agent-sdk/05-hooks.js",
+    "m4:mcp": "node src/module-04-mcp/01-mcp-client.js",
+    "m4:config": "node src/module-04-mcp/02-config.js",
+    "m4:agent": "node src/module-04-mcp/03-agent-mcp.js",
+    "m4:errors": "node src/module-04-mcp/04-errors.js",
+    "m4:resources": "node src/module-04-mcp/05-resources.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "dotenv": "^16.4.5"
   }
 }

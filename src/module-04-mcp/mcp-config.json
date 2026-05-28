@@ -1,0 +1,19 @@
+{
+  "_comment": "Mirrors the canonical .mcp.json shape from the official Claude Code docs. In a real project this file lives at the project root and is named .mcp.json — it is checked into git so the whole team gets the same MCP servers.",
+
+  "mcpServers": {
+    "orders-demo": {
+      "command": "node",
+      "args": ["src/module-04-mcp/server.js"]
+    },
+
+    "github": {
+      "_note": "Example only — illustrates env-var interpolation. The loader skips this entry if GITHUB_TOKEN is unset.",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "${process.env.GITHUB_TOKEN}"
+      }
+    }
+  }
+}
