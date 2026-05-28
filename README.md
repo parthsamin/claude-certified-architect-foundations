@@ -158,6 +158,42 @@ _What you'll observe:_ a refund agent asked to issue $199 (allowed) and $999 (bl
 
 ---
 
+---
+
+## Module 4 — Model Context Protocol (MCP)
+
+Plug external systems into the agent through an open protocol. Build a real MCP server, configure it via `.mcp.json`, glue MCP tools into the Module-3 `Agent` class, design structured errors, and use the resources primitive to give the agent a "map" of available data before it makes any tool calls.
+
+### `npm run m4:mcp`
+
+A real MCP server (`server.js`) publishing one tool, a client that spawns it over stdio, discovers the tools, and invokes one — plus a bogus-ID call to preview `isError`.
+
+### `npm run m4:config`
+
+A `.mcp.json`-style config with env-var interpolation. The loader spawns every configured server (skipping any whose required env var is unset) and prints the effective union of discovered tools.
+
+### `npm run m4:agent`
+
+The big merge: `mcp-host.js` translates MCP tool definitions into the `Agent` class's `toolCatalog` shape. An `Agent` answers a real-order question and a bogus-order question — the bogus one honestly says "not found" because `isError` propagated through the loop.
+
+### `npm run m4:errors`
+
+Two tools, same operation, two error shapes: structured (`errorCategory`, `isRetryable`, `message`, `attempted_query`, `partial_results`) vs generic ("Operation failed"). The agent reasoning under each shape is the lesson.
+
+### `npm run m4:resources`
+
+A server publishing **one tool + two resources** (orders catalog, orders schema). The catalog is pre-loaded into the agent's system prompt — Q1 ("which orders does Jane have?") is answered with zero tool calls; Q2 (one order's full details) still needs a tool call.
+
+### Key takeaways
+
+- MCP is an open protocol with three primitives: **tools** (verbs), **resources** (nouns), prompts (templates). Tools and resources are the ones the exam tests.
+- `.mcp.json` (project, version-controlled) for team-shared servers; `~/.claude.json` (user home) for personal/experimental. Secrets via `${ENV_VAR}` references, never inline.
+- Translation gotcha: MCP's `inputSchema` (camelCase) ↔ Anthropic API's `input_schema` (snake_case). Also unwrap the `{content:[{type:"text",text}]}` envelope before handing to the agent.
+- Structured errors give the agent decision inputs (`errorCategory`, `isRetryable`, etc.); generic errors give nothing. *If your error response is a string, you designed it wrong.*
+- Decision rule for tool vs resource: action / parameterized data → tool; static or structural context → resource. Reclassifying read-only "list/describe" tools as resources collapses tool counts and makes routing cleaner.
+
+---
+
 ## Running an exercise
 
 ```bash
@@ -178,3 +214,4 @@ Concept refreshers for each completed module — read these before re-running th
 - [Module 1 — Claude API Fundamentals](revision/module-01-api-fundamentals.md)
 - [Module 2 — Tools and `tool_use`](revision/module-02-tools.md)
 - [Module 3 — Agent SDK and Agentic Loops](revision/module-03-agent-sdk.md)
+- [Module 4 — Model Context Protocol (MCP)](revision/module-04-mcp.md)
