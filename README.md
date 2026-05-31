@@ -322,6 +322,10 @@ See [`src/capstone/README.md`](src/capstone/README.md) for the architecture diag
 
 Several exercises support an opt-in browser dashboard that streams events from the running agent network in real time. It shows the **network topology** (coordinator / subagents / tools as distinct node shapes), draws **animated arrows** as data flows between them, and gives you a click-to-expand **full event log** for every iteration, tool call, and subagent return.
 
+![Live agent-flow dashboard during a capstone run — the coordinator fanning out to three parallel researcher subagents, MCP tool nodes, animated data-flow arrows, and the expandable event log](docs/images/capstone-dashboard.png)
+
+*The capstone network mid-run: the coordinator (yellow) fanning out to three parallel researchers (blue), MCP tool nodes (teal), with live data-flow arrows and the click-to-expand event log.*
+
 ### Capstone — dashboard is ON by default
 
 The capstone always starts the dashboard because the visualization *is* the headline feature.
