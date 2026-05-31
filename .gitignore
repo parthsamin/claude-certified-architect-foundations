@@ -6,3 +6,7 @@ node_modules/
 # Claude-internal scaffolding — not part of the published lab
 RESUME.md
 .claude/
+
+# Runtime state artifacts — regenerated on each run, not source
+src/capstone/state.json
+src/module-11-context-mgmt/researcher-state.json
