@@ -9,4 +9,6 @@ RESUME.md
 
 # Runtime state artifacts — regenerated on each run, not source
 src/capstone/state.json
+src/capstone/trace.json
+src/capstone/trace.mermaid
 src/module-11-context-mgmt/researcher-state.json
