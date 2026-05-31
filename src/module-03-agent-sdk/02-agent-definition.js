@@ -25,6 +25,7 @@
 // ===================================================================
 
 import { Agent } from "./agent.js";
+import { tracer, finalizeTracing } from "../lib/optional-tracer.js";
 
 // -------------------------------------------------------------------
 // THE TOOL CATALOG — every tool that exists in our "company".
@@ -122,6 +123,7 @@ const tier1Agent = new Agent({
   // Read-only tools ONLY. No refunds, no deletions.
   allowedTools: ["get_customer", "lookup_order"],
   toolCatalog: TOOL_CATALOG,
+  tracer,
 });
 
 const refundAgent = new Agent({
@@ -132,6 +134,7 @@ const refundAgent = new Agent({
     "before issuing any refund. Then call process_refund.",
   allowedTools: ["get_customer", "lookup_order", "process_refund"],
   toolCatalog: TOOL_CATALOG,
+  tracer,
 });
 
 const adminAgent = new Agent({
@@ -140,6 +143,7 @@ const adminAgent = new Agent({
   systemPrompt: "You are an admin assistant with full privileges.",
   allowedTools: Object.keys(TOOL_CATALOG), // everything
   toolCatalog: TOOL_CATALOG,
+  tracer,
 });
 
 async function main() {
@@ -158,6 +162,8 @@ async function main() {
     "\nThe tier-1 agent COULD NOT call process_refund. Not because we asked it nicely —",
   );
   console.log("because the tool was never in its allowedTools list. Enforcement, not request.");
+
+  await finalizeTracing();
 }
 
 main().catch((err) => {

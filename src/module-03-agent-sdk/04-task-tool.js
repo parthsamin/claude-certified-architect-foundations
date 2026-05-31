@@ -51,6 +51,7 @@
 // ===================================================================
 
 import { Agent } from "./agent.js";
+import { tracer, finalizeTracing } from "../lib/optional-tracer.js";
 
 const t0 = Date.now();
 const stamp = () => `t+${((Date.now() - t0) / 1000).toFixed(2)}s`;
@@ -99,6 +100,7 @@ const researcherAgent = new Agent({
   systemPrompt: "You are a research specialist. Use get_doc, then return ONLY the facts.",
   allowedTools: ["get_doc"],
   toolCatalog: RESEARCHER_TOOLS,
+  tracer,
 });
 
 const writerAgent = new Agent({
@@ -108,6 +110,7 @@ const writerAgent = new Agent({
     "You are a technical writer. Use ONLY the facts in the brief; do not invent. Match the requested format exactly.",
   allowedTools: [],
   toolCatalog: {},
+  tracer,
 });
 
 // -------------------------------------------------------------------
@@ -148,7 +151,10 @@ const COORDINATOR_TOOLS = {
       const sub = SUBAGENT_REGISTRY[subagent_type];
       if (!sub) return { error: `unknown subagent_type: ${subagent_type}` };
       console.log(`   [${stamp()}] Task -> ${subagent_type} START`);
+      const t0 = Date.now();
+      if (tracer) tracer.subagentSpawn("coordinator", subagent_type, prompt);
       const result = await sub.run(prompt);
+      if (tracer) tracer.subagentReturn("coordinator", subagent_type, result, Date.now() - t0);
       console.log(`   [${stamp()}] Task -> ${subagent_type} DONE`);
       return { subagent_type, result };
     },
@@ -166,6 +172,7 @@ const coordinatorAgent = new Agent({
     "that includes the writer's brief AND all source facts.",
   allowedTools: ["Task"],
   toolCatalog: COORDINATOR_TOOLS,
+  tracer,
 });
 
 async function main() {
@@ -180,6 +187,8 @@ async function main() {
   console.log(
     "\nWatch the timestamps: if the two researcher Task calls overlap, parallel spawning worked.",
   );
+
+  await finalizeTracing();
 }
 
 main().catch((err) => {

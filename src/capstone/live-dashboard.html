@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Capstone — Live Trace</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --panel: #16161a;
+    --panel-2: #1d1d22;
+    --text: #e6e6e6;
+    --muted: #888;
+    --accent: #ffd23f;      /* coordinator / tasks */
+    --green:  #4caf50;      /* returns / done */
+    --blue:   #4fc3f7;      /* tools / subagents */
+    --orange: #ff9800;      /* warnings */
+    --red:    #ef5350;
+    --purple: #b39ddb;      /* agent_start */
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  }
+  h1 { margin: 0 0 4px 0; font-size: 20px; color: var(--accent); }
+  .sub { color: var(--muted); margin-bottom: 18px; font-size: 13px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 14px;
+    height: calc(100vh - 80px);
+  }
+  .card {
+    background: var(--panel); border-radius: 8px; padding: 12px;
+    border: 1px solid #25252b; overflow: hidden; display: flex; flex-direction: column;
+  }
+  .card h2 {
+    margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted); font-weight: 700;
+  }
+
+  /* ───────── Topology ───────── */
+  .topology-wrap { grid-column: 1; grid-row: 1 / span 2; min-height: 460px; }
+  .legend { display: flex; gap: 16px; font-size: 11px; margin-bottom: 8px; }
+  .legend .item { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 50%; }
+  .legend .swatch.tool { border-radius: 3px; }
+  svg#topology { flex: 1; width: 100%; min-height: 360px; }
+  .node-label {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    fill: var(--text);
+    pointer-events: none;
+  }
+  .node-sub {
+    font-family: ui-monospace, monospace;
+    font-size: 9px;
+    fill: var(--muted);
+    pointer-events: none;
+  }
+  .node-circle { transition: filter 0.2s; }
+  .node-circle.active { filter: drop-shadow(0 0 6px var(--accent)); }
+  .edge-line { stroke: #333; stroke-width: 1.4; fill: none; }
+
+  /* ───────── Counters ───────── */
+  .counters-card { grid-column: 2; grid-row: 1; }
+  .counters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .counter { background: var(--panel-2); padding: 10px; border-radius: 6px; text-align: center; }
+  .counter .n { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .counter .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+  /* ───────── Agent state cards ───────── */
+  .state-card { grid-column: 2; grid-row: 2; }
+  .agents { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .agent-card {
+    padding: 8px 10px; background: var(--panel-2); border-radius: 5px;
+    border-left: 3px solid #2a2a30; font-size: 12px;
+    transition: border-color 120ms, background 120ms;
+  }
+  .agent-card.active { border-left-color: var(--accent); background: #25241a; }
+  .agent-card.done   { border-left-color: var(--green);  background: #1a2218; }
+  .agent-card.error  { border-left-color: var(--red);    background: #2a1818; }
+  .agent-row { display: flex; justify-content: space-between; align-items: center; }
+  .agent-name { font-weight: 700; }
+  .agent-kind { font-size: 9px; padding: 2px 5px; border-radius: 3px; }
+  .kind-coordinator { background: var(--accent); color: #000; }
+  .kind-subagent    { background: var(--blue); color: #000; }
+  .kind-agent       { background: #555; color: #fff; }
+  .agent-status { color: var(--muted); font-size: 10px; margin-top: 3px; font-family: ui-monospace, monospace; }
+  .pulse { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+  /* ───────── Event log ───────── */
+  .log-card { grid-column: 1 / span 2; grid-row: 3; min-height: 220px; }
+  .log {
+    flex: 1; overflow-y: auto;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+  }
+  .ev {
+    padding: 4px 8px; border-bottom: 1px solid #1f1f24;
+    cursor: pointer; user-select: none;
+  }
+  .ev:hover { background: #1a1a1f; }
+  .ev .head { display: flex; gap: 8px; align-items: baseline; }
+  .ev .t { color: #555; min-width: 60px; font-size: 11px; }
+  .ev .k { font-weight: 700; min-width: 170px; font-size: 12px; }
+  .ev .who { color: var(--blue); min-width: 140px; font-size: 12px; }
+  .ev .d { color: #aaa; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+  .ev .body {
+    display: none;
+    margin-top: 6px; padding: 10px;
+    background: #0a0a0c; border-radius: 4px;
+    white-space: pre-wrap; word-break: break-word;
+    color: #cfcfcf; font-size: 11.5px;
+    border-left: 2px solid #333;
+  }
+  .ev.expanded .body { display: block; }
+  .ev.expanded { background: #15151a; }
+  .ev .caret { color: #555; font-size: 10px; margin-right: 4px; }
+
+  .ev.kind-agent_start          .k { color: var(--purple); }
+  .ev.kind-iter_end             .k { color: var(--blue); }
+  .ev.kind-tool_call_request    .k { color: var(--blue); }
+  .ev.kind-tool_call_result     .k { color: #80cbc4; }
+  .ev.kind-subagent_spawn       .k { color: var(--accent); }
+  .ev.kind-subagent_return      .k { color: var(--green); }
+  .ev.kind-agent_end            .k { color: var(--green); }
+
+  .connected { color: var(--green); }
+  .disconnected { color: var(--red); }
+
+  .toolbar { font-size: 12px; color: var(--muted); margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .toolbar button {
+    background: #2a2a30; color: var(--text); border: none;
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;
+  }
+  .toolbar button:hover { background: #3a3a44; }
+</style>
+</head>
+<body>
+  <h1>🔭 Capstone — Live Trace</h1>
+  <div class="sub">
+    Live agent-network flow. Click any log row to expand its full payload.
+    Status: <span id="status" class="connected">connecting…</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- TOPOLOGY ─────────────────────────────────────────────── -->
+    <div class="card topology-wrap">
+      <h2 style="display:flex; align-items:center;">
+        Network topology — live data flow
+        <span class="toolbar">
+          <span class="legend">
+            <span class="item"><span class="swatch" style="background:var(--accent)"></span> coordinator</span>
+            <span class="item"><span class="swatch" style="background:var(--blue)"></span> subagent</span>
+            <span class="item"><span class="swatch tool" style="background:#80cbc4"></span> tool (MCP / function)</span>
+            <span class="item">↑ yellow = call · ↓ green = return</span>
+          </span>
+        </span>
+      </h2>
+      <svg id="topology" viewBox="0 0 1000 460" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="head-yellow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+          </marker>
+          <marker id="head-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--green)"/>
+          </marker>
+          <marker id="head-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--blue)"/>
+          </marker>
+        </defs>
+        <g id="edges"></g>
+        <g id="nodes"></g>
+        <g id="packets"></g>
+      </svg>
+    </div>
+
+    <!-- COUNTERS ─────────────────────────────────────────────── -->
+    <div class="card counters-card">
+      <h2>Counters</h2>
+      <div class="counters">
+        <div class="counter"><div class="n" id="c-agents">0</div><div class="l">agents</div></div>
+        <div class="counter"><div class="n" id="c-iters">0</div><div class="l">iterations</div></div>
+        <div class="counter"><div class="n" id="c-tools">0</div><div class="l">tool calls</div></div>
+        <div class="counter"><div class="n" id="c-spawns">0</div><div class="l">subagent tasks</div></div>
+      </div>
+    </div>
+
+    <!-- AGENT STATE ──────────────────────────────────────────── -->
+    <div class="card state-card">
+      <h2>Agent state</h2>
+      <div id="agents" class="agents"></div>
+    </div>
+
+    <!-- EVENT LOG ────────────────────────────────────────────── -->
+    <div class="card log-card">
+      <h2 style="display:flex; align-items:center;">
+        Event log — click any row to expand
+        <span class="toolbar">
+          <button id="expand-all">Expand all</button>
+          <button id="collapse-all">Collapse all</button>
+          <span id="filter-info">showing all</span>
+        </span>
+      </h2>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+/* ───────────── Counters ───────────── */
+const counts = { agents: new Set(), iters: 0, tools: 0, spawns: 0 };
+function bumpCounts() {
+  $("c-agents").textContent = counts.agents.size;
+  $("c-iters").textContent  = counts.iters;
+  $("c-tools").textContent  = counts.tools;
+  $("c-spawns").textContent = counts.spawns;
+}
+
+/* ───────────── Topology model ───────────── */
+const TOPO_W = 1000, TOPO_H = 460;
+const TIER_Y = { user: 40, coordinator: 130, subagent: 250, tool: 390 };
+const NODE_R = 26;        // circle radius for agents
+const TOOL_W = 130, TOOL_H = 36;
+const META_TOOLS = new Set(["Task"]); // hidden in topology — represented as subagent arrows
+
+const nodes = new Map();  // name -> { name, type, x, y }
+const edges = new Map();  // "from->to" -> { from, to, kind }
+
+function setNodeType(name, type) {
+  if (!nodes.has(name)) nodes.set(name, { name, type });
+  else {
+    const cur = nodes.get(name);
+    // Upgrade: coordinator/subagent beats generic agent; tool stays tool.
+    const rank = { tool: 0, agent: 1, subagent: 2, coordinator: 3, user: 4 };
+    if (rank[type] > rank[cur.type]) cur.type = type;
+  }
+  layout();
+}
+function ensureUser() { setNodeType("User", "user"); }
+function ensureAgent(name) { if (!nodes.has(name)) setNodeType(name, "agent"); }
+function ensureTool(name) { setNodeType(name, "tool"); }
+
+function layout() {
+  const byTier = { user: [], coordinator: [], subagent: [], agent: [], tool: [] };
+  for (const n of nodes.values()) byTier[n.type]?.push(n);
+  // Agents that haven't been classified yet sit alongside subagents.
+  byTier.subagent = byTier.subagent.concat(byTier.agent);
+  byTier.agent = [];
+  for (const tier of ["user", "coordinator", "subagent", "tool"]) {
+    const list = byTier[tier];
+    list.sort((a, b) => a.name.localeCompare(b.name));
+    list.forEach((n, i) => {
+      n.x = TOPO_W * (i + 1) / (list.length + 1);
+      n.y = TIER_Y[tier];
+    });
+  }
+  render();
+}
+
+function addEdge(from, to, kind = "agent") {
+  if (META_TOOLS.has(to) || META_TOOLS.has(from)) return;
+  const key = from + "->" + to;
+  if (!edges.has(key)) {
+    edges.set(key, { from, to, kind });
+    render();
+  }
+}
+
+/* ───────────── Topology render ───────────── */
+const SVG_NS = "http://www.w3.org/2000/svg";
+function el(name, attrs = {}) {
+  const e = document.createElementNS(SVG_NS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+function render() {
+  const g_edges = $("edges"); const g_nodes = $("nodes");
+  g_edges.innerHTML = ""; g_nodes.innerHTML = "";
+
+  for (const ed of edges.values()) {
+    const a = nodes.get(ed.from), b = nodes.get(ed.to);
+    if (!a || !b) continue;
+    const line = el("line", {
+      x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+      class: "edge-line",
+    });
+    g_edges.appendChild(line);
+  }
+
+  for (const n of nodes.values()) {
+    if (n.type === "tool") {
+      // Tool: rounded rectangle
+      const rect = el("rect", {
+        x: n.x - TOOL_W/2, y: n.y - TOOL_H/2,
+        width: TOOL_W, height: TOOL_H, rx: 6,
+        fill: "#0e2120", stroke: "#80cbc4", "stroke-width": 1.5,
+        id: "node-" + cssId(n.name),
+        class: "node-circle",
+      });
+      g_nodes.appendChild(rect);
+      g_nodes.appendChild(el("text", {
+        x: n.x, y: n.y - 2, "text-anchor": "middle",
+        class: "node-label",
+      })).textContent = "🔧 " + n.name;
+      g_nodes.appendChild(el("text", {
+        x: n.x, y: n.y + 12, "text-anchor": "middle",
+        class: "node-sub",
+      })).textContent = "tool";
+    } else {
+      const color =
+        n.type === "user"        ? "#888" :
+        n.type === "coordinator" ? "var(--accent)" :
+        n.type === "subagent"    ? "var(--blue)"   : "#666";
+      const circle = el("circle", {
+        cx: n.x, cy: n.y, r: NODE_R,
+        fill: "#16161a", stroke: color, "stroke-width": 2.5,
+        id: "node-" + cssId(n.name),
+        class: "node-circle",
+      });
+      g_nodes.appendChild(circle);
+      g_nodes.appendChild(el("text", {
+        x: n.x, y: n.y + 4, "text-anchor": "middle",
+        class: "node-label",
+      })).textContent = n.name;
+      g_nodes.appendChild(el("text", {
+        x: n.x, y: n.y + NODE_R + 14, "text-anchor": "middle",
+        class: "node-sub",
+      })).textContent =
+        n.type === "user"        ? "user" :
+        n.type === "coordinator" ? "coordinator" :
+        n.type === "subagent"    ? "subagent" : "agent";
+    }
+  }
+}
+
+function cssId(s) { return s.replace(/[^A-Za-z0-9_]/g, "_"); }
+
+/* ───────────── Packet animation (data-flow arrows) ───────────── */
+function flyPacket(fromName, toName, color) {
+  const a = nodes.get(fromName), b = nodes.get(toName);
+  if (!a || !b) return;
+  const packets = $("packets");
+  const c = el("circle", {
+    cx: a.x, cy: a.y, r: 6, fill: color,
+    "stroke": "#000", "stroke-width": 1,
+    opacity: 0.95,
+  });
+  packets.appendChild(c);
+  const start = performance.now();
+  const dur = 650;
+  function step(t) {
+    const p = Math.min(1, (t - start) / dur);
+    const ease = p < 0.5 ? 2*p*p : 1 - (-2*p + 2) ** 2 / 2; // easeInOutQuad
+    const x = a.x + (b.x - a.x) * ease;
+    const y = a.y + (b.y - a.y) * ease;
+    c.setAttribute("cx", x);
+    c.setAttribute("cy", y);
+    if (p < 1) requestAnimationFrame(step);
+    else {
+      // brief flash on target node
+      const target = $("node-" + cssId(toName));
+      if (target) {
+        target.classList.add("active");
+        setTimeout(() => target.classList.remove("active"), 250);
+      }
+      c.remove();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+/* ───────────── Agent state cards ───────────── */
+const agentCards = {};
+function ensureCard(name, kind = "agent") {
+  if (agentCards[name]) return agentCards[name];
+  const wrap = document.createElement("div");
+  wrap.className = "agent-card";
+  wrap.innerHTML = `
+    <div class="agent-row">
+      <span class="agent-name">${escape(name)}</span>
+      <span class="agent-kind kind-${kind}">${kind}</span>
+    </div>
+    <div class="agent-status">idle</div>
+  `;
+  $("agents").appendChild(wrap);
+  agentCards[name] = wrap;
+  counts.agents.add(name);
+  bumpCounts();
+  return wrap;
+}
+function setCardKind(name, kind) {
+  const c = ensureCard(name, kind);
+  const el = c.querySelector(".agent-kind");
+  el.className = "agent-kind kind-" + kind;
+  el.textContent = kind;
+}
+function setCardStatus(name, text, cls) {
+  const card = ensureCard(name);
+  card.className = "agent-card " + (cls || "");
+  card.querySelector(".agent-status").textContent = text;
+}
+
+/* ───────────── Event log with click-to-expand ───────────── */
+function escape(s) { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
+function fmtT(ms) { return `+${(ms/1000).toFixed(2)}s`; }
+function truncate(s, n=160) {
+  if (!s) return ""; const t = String(s).replace(/\s+/g, " "); return t.length > n ? t.slice(0, n-1) + "…" : t;
+}
+
+function eventDetail(e) {
+  return e.prompt_summary ?? e.output_summary ?? e.final_summary ??
+    (e.tool ? `${e.tool}(${truncate(e.input_summary, 100)})` : "") ??
+    (e.stop_reason ?? "");
+}
+function eventActor(e) { return e.agent ?? e.subagent_type ?? ""; }
+
+function appendLog(e) {
+  const row = document.createElement("div");
+  row.className = "ev kind-" + e.kind;
+  const detail = truncate(eventDetail(e), 220);
+  const who = eventActor(e);
+  row.innerHTML =
+    `<div class="head">` +
+    `<span class="caret">▶</span>` +
+    `<span class="t">${fmtT(e.t_ms)}</span>` +
+    `<span class="k">${escape(e.kind)}</span>` +
+    `<span class="who">${escape(who)}</span>` +
+    `<span class="d">${escape(detail)}</span>` +
+    `</div>` +
+    `<pre class="body">${escape(JSON.stringify(e, null, 2))}</pre>`;
+  row.addEventListener("click", () => {
+    const exp = row.classList.toggle("expanded");
+    row.querySelector(".caret").textContent = exp ? "▼" : "▶";
+  });
+  $("log").appendChild(row);
+  $("log").scrollTop = $("log").scrollHeight;
+}
+
+$("expand-all").addEventListener("click", () => {
+  for (const r of document.querySelectorAll(".ev")) {
+    r.classList.add("expanded"); r.querySelector(".caret").textContent = "▼";
+  }
+});
+$("collapse-all").addEventListener("click", () => {
+  for (const r of document.querySelectorAll(".ev")) {
+    r.classList.remove("expanded"); r.querySelector(".caret").textContent = "▶";
+  }
+});
+
+/* ───────────── Event dispatch ───────────── */
+function handle(e) {
+  // Counters
+  if (e.kind === "iter_start") counts.iters++;
+  if (e.kind === "tool_call_request" && !META_TOOLS.has(e.tool)) counts.tools++;
+  if (e.kind === "subagent_spawn") counts.spawns++;
+  bumpCounts();
+
+  // Always have a User node
+  ensureUser();
+
+  if (e.kind === "agent_start") {
+    ensureAgent(e.agent);
+    ensureCard(e.agent, "agent");
+    setCardStatus(e.agent, "running…", "active pulse");
+    // If this is the very first agent_start ever, mark as coordinator
+    if (counts.agents.size === 1) {
+      setNodeType(e.agent, "coordinator");
+      setCardKind(e.agent, "coordinator");
+      addEdge("User", e.agent);
+    }
+  }
+  if (e.kind === "iter_start") setCardStatus(e.agent, `iter ${e.iter}`, "active pulse");
+  if (e.kind === "iter_end") {
+    const cls = e.stop_reason === "end_turn" ? "" :
+                e.stop_reason === "tool_use" ? "active" : "error";
+    setCardStatus(e.agent, `iter ${e.iter} → ${e.stop_reason}`, cls || "active");
+  }
+  if (e.kind === "agent_end") setCardStatus(e.agent, "done ✓", "done");
+
+  if (e.kind === "subagent_spawn") {
+    setNodeType(e.parent, "coordinator");
+    setNodeType(e.subagent_type, "subagent");
+    setCardKind(e.parent, "coordinator");
+    setCardKind(e.subagent_type, "subagent");
+    addEdge(e.parent, e.subagent_type);
+    flyPacket(e.parent, e.subagent_type, "var(--accent)");
+  }
+  if (e.kind === "subagent_return") {
+    flyPacket(e.subagent_type, e.parent, "var(--green)");
+  }
+  if (e.kind === "tool_call_request" && !META_TOOLS.has(e.tool)) {
+    ensureTool(e.tool);
+    addEdge(e.agent, e.tool, "tool");
+    flyPacket(e.agent, e.tool, "var(--blue)");
+  }
+  if (e.kind === "tool_call_result" && !META_TOOLS.has(e.tool)) {
+    flyPacket(e.tool, e.agent, "#80cbc4");
+  }
+
+  appendLog(e);
+}
+
+/* ───────────── SSE connection ───────────── */
+const status = $("status");
+const es = new EventSource("/events");
+es.onopen  = () => { status.textContent = "connected"; status.className = "connected"; };
+es.onerror = () => { status.textContent = "disconnected"; status.className = "disconnected"; };
+es.onmessage = (m) => { try { handle(JSON.parse(m.data)); } catch (err) { console.error(err); } };
+
+// Bootstrap a User node so the topology has its anchor immediately
+ensureUser();
+</script>
+</body>
+</html>

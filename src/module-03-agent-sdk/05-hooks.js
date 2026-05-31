@@ -39,6 +39,7 @@
 // ===================================================================
 
 import { Agent } from "./agent.js";
+import { tracer, finalizeTracing } from "../lib/optional-tracer.js";
 
 const orders = {
   "ORD-9":  { id: "ORD-9",  customer_id: "cust_42", total: 199.0, status: "SHIPPED",   ship_date: "Mar 5, 2026" },
@@ -129,6 +130,7 @@ const refundAgent = new Agent({
   allowedTools: ["lookup_order", "process_refund"],
   toolCatalog: TOOL_CATALOG,
   hooks: { preToolUse: preToolUseHook, postToolUse: postToolUseHook },
+  tracer,
 });
 
 async function main() {
@@ -145,6 +147,8 @@ async function main() {
   );
   console.log("at the hook layer — the handler was never even called. The model");
   console.log("could not have 'talked past' this; the enforcement is in code.");
+
+  await finalizeTracing();
 }
 
 main().catch((err) => {

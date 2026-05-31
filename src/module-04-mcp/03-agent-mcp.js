@@ -27,6 +27,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Agent } from "../module-03-agent-sdk/agent.js";
 import { MCPHost } from "./mcp-host.js";
+import { tracer, finalizeTracing } from "../lib/optional-tracer.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG = path.join(__dirname, "mcp-config.json");
@@ -56,6 +57,7 @@ async function main() {
       "guess order details — always check first.",
     allowedTools: discovered,
     toolCatalog: host.toolCatalog,
+    tracer,
   });
 
   // -----------------------------------------------------------------
@@ -73,6 +75,8 @@ async function main() {
   console.log("\nNote: the Agent code is IDENTICAL to Module 3.");
   console.log("Adding more MCP servers in mcp-config.json grows the toolset");
   console.log("with zero changes inside the agent.");
+
+  await finalizeTracing();
 }
 
 main().catch((err) => {

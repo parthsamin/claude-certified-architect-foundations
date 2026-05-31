@@ -38,6 +38,7 @@ import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { Agent } from "../module-03-agent-sdk/agent.js";
+import { tracer, finalizeTracing } from "../lib/optional-tracer.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -106,6 +107,7 @@ async function main() {
       "order.\n\n=== ORDERS CATALOG ===\n" + catalogText,
     allowedTools: Object.keys(toolCatalog),
     toolCatalog,
+    tracer,
   });
 
   console.log("\n### Q1: question answerable from the resource alone ###");
@@ -120,6 +122,8 @@ async function main() {
     "system prompt was enough. Q2 needed the tool because per-order " +
     "details aren't in the resource.",
   );
+
+  await finalizeTracing();
 }
 
 main().catch((err) => {

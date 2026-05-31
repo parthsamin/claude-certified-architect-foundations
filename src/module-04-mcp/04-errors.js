@@ -42,6 +42,7 @@ import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { Agent } from "../module-03-agent-sdk/agent.js";
+import { tracer, finalizeTracing } from "../lib/optional-tracer.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -103,6 +104,7 @@ async function agentComparison(client) {
       allowedTools: Object.keys(catalog),
       toolCatalog: catalog,
       maxIterations: 4, // keep retries bounded for the demo
+      tracer,
     });
     console.log(`\n--- ${toolName} ---`);
     const out = await agent.run("Please check on my order ORD-1001.");
@@ -125,6 +127,7 @@ async function main() {
   await agentComparison(client);
 
   await client.close();
+  await finalizeTracing();
 }
 
 main().catch((err) => {

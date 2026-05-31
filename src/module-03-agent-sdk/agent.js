@@ -34,6 +34,7 @@ export class Agent {
     allowedTools,   // ["get_customer", "lookup_order", ...]
     toolCatalog,    // { get_customer: { schema, handler }, ... }
     hooks = {},     // { preToolUse?, postToolUse? } — Concept 3.5
+    tracer = null,  // optional Tracer instance — see src/capstone/tracer.js
     maxIterations = 25,
   }) {
     this.name = name;
@@ -41,6 +42,7 @@ export class Agent {
     this.systemPrompt = systemPrompt;
     this.allowedTools = allowedTools;
     this.hooks = hooks;
+    this.tracer = tracer;
     this.maxIterations = maxIterations;
 
     // FILTER the universe down to this agent's whitelist.
@@ -55,9 +57,11 @@ export class Agent {
   }
 
   async run(userPrompt) {
+    if (this.tracer) this.tracer.agentStart(this.name, userPrompt);
     const messages = [{ role: "user", content: userPrompt }];
 
     for (let i = 1; i <= this.maxIterations; i++) {
+      if (this.tracer) this.tracer.iterStart(this.name, i);
       const res = await client.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 1024,
@@ -66,10 +70,13 @@ export class Agent {
         messages,
       });
       console.log(`[${this.name}] iter ${i}  stop_reason=${res.stop_reason}`);
+      if (this.tracer) this.tracer.iterEnd(this.name, i, res.stop_reason, res.usage);
       messages.push({ role: "assistant", content: res.content });
 
       if (res.stop_reason === "end_turn") {
-        return res.content.find((b) => b.type === "text")?.text ?? "";
+        const finalText = res.content.find((b) => b.type === "text")?.text ?? "";
+        if (this.tracer) this.tracer.agentEnd(this.name, finalText);
+        return finalText;
       }
       if (res.stop_reason !== "tool_use") {
         throw new Error(`[${this.name}] unexpected stop_reason: ${res.stop_reason}`);
@@ -104,6 +111,8 @@ export class Agent {
             }
           }
 
+          if (this.tracer) this.tracer.toolCallRequest(this.name, i, block.name, block.input, block.id);
+          const t0 = Date.now();
           const handler = this.handlers[block.name];
           let result = handler
             ? await handler(block.input)
@@ -121,6 +130,7 @@ export class Agent {
             });
             if (transformed !== undefined) result = transformed;
           }
+          if (this.tracer) this.tracer.toolCallResult(this.name, i, block.name, block.id, result, Date.now() - t0);
 
           return {
             type: "tool_result",

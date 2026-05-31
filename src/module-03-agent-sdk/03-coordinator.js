@@ -43,6 +43,7 @@
 // ===================================================================
 
 import { Agent } from "./agent.js";
+import { tracer, finalizeTracing } from "../lib/optional-tracer.js";
 
 // -------------------------------------------------------------------
 // A mock "knowledge base" for the researcher to look things up in.
@@ -98,6 +99,7 @@ const researcherAgent = new Agent({
     "Do not editorialize or format.",
   allowedTools: ["get_doc"],
   toolCatalog: RESEARCHER_TOOLS,
+  tracer,
 });
 
 const writerAgent = new Agent({
@@ -109,6 +111,7 @@ const writerAgent = new Agent({
     "Use ONLY the facts provided — do not invent.",
   allowedTools: [],         // no tools — pure reasoning
   toolCatalog: {},
+  tracer,
 });
 
 // -------------------------------------------------------------------
@@ -136,7 +139,10 @@ const COORDINATOR_TOOLS = {
     },
     handler: async ({ prompt }) => {
       console.log(`   [coordinator -> researcher]  delegating...`);
+      const t0 = Date.now();
+      if (tracer) tracer.subagentSpawn("coordinator", "researcher", prompt);
       const out = await researcherAgent.run(prompt);
+      if (tracer) tracer.subagentReturn("coordinator", "researcher", out, Date.now() - t0);
       return { result: out };
     },
   },
@@ -154,7 +160,10 @@ const COORDINATOR_TOOLS = {
     },
     handler: async ({ prompt }) => {
       console.log(`   [coordinator -> writer]      delegating...`);
+      const t0 = Date.now();
+      if (tracer) tracer.subagentSpawn("coordinator", "writer", prompt);
       const out = await writerAgent.run(prompt);
+      if (tracer) tracer.subagentReturn("coordinator", "writer", out, Date.now() - t0);
       return { result: out };
     },
   },
@@ -171,6 +180,7 @@ const coordinatorAgent = new Agent({
     "(4) return the writer's output as your final answer.",
   allowedTools: ["ask_researcher", "ask_writer"],
   toolCatalog: COORDINATOR_TOOLS,
+  tracer,
 });
 
 async function main() {
@@ -187,6 +197,8 @@ async function main() {
   console.log("  - Coordinator delegated to researcher, then writer (or in some order)");
   console.log("  - Each subagent started with a FRESH messages array (isolated context)");
   console.log("  - Coordinator was the ONLY component that saw all of it.");
+
+  await finalizeTracing();
 }
 
 main().catch((err) => {
