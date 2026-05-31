@@ -54,7 +54,7 @@ realistic questions**.
    are the exact shape the exam uses.
 2. **Run every `npm run mN:slug` once if you haven't.** Empirical
    recall sticks better than reading.
-3. **Take the practice tests in `guide_en.MD`:**
+3. **Take the practice tests in `guide_en.MD`** (in [Paul Larionov's repo](https://github.com/paullarionov/claude-certified-architect), not vendored here)**:**
    - "Examples of Exam Questions with Explanations" (around line 1938) —
      12 example questions across multiple scenarios, with explanations.
    - "Practice Test" (around line 2120) — 28+ multiple-choice questions.

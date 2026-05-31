@@ -4,7 +4,7 @@ Hands-on training repo for the **Claude Certified Architect — Foundations** ce
 
 One module at a time. Each module has a short theory briefing, a set of runnable coding exercises, and a quick quiz. By the end, the `src/` tree becomes a working multi-agent research network.
 
-> **Source guide.** The exam guide that drives this lab's curriculum (`guide_en.MD` in this folder) comes from the community-maintained repo by Paul Larionov: <https://github.com/paullarionov/claude-certified-architect>. The lab here is a hands-on companion built around that guide — every module maps to a chapter / domain section of the guide, and the **Exam traps** rows in each `revision/module-*.md` file are condensed from it.
+> **Source guide.** The exam guide that drives this lab's curriculum (`guide_en.MD`) lives in the community-maintained repo by Paul Larionov: <https://github.com/paullarionov/claude-certified-architect>. It is **not** vendored into this repo — read it at the source. The lab here is a hands-on companion built around that guide — every module maps to a chapter / domain section of the guide, and the **Exam traps** rows in each `revision/module-*.md` file are condensed from it.
 
 ## Prerequisites
 
@@ -314,7 +314,7 @@ What you'll see in the logs:
 - `state.json` writes after each subagent completes.
 - A final report with **both** the 2023 MIA (8%) and 2024 Spotify (12%) music findings preserved with dates — the provenance-under-conflict pattern from Module 12.
 
-See [`src/capstone/README.md`](src/capstone/README.md) for the architecture diagram and the module-to-code mapping. Final exam prep, the symptom→diagnosis cheatsheet, and pointers to the practice tests in `guide_en.MD` are in [`revision/capstone-and-exam-prep.md`](revision/capstone-and-exam-prep.md).
+See [`src/capstone/README.md`](src/capstone/README.md) for the architecture diagram and the module-to-code mapping. Final exam prep, the symptom→diagnosis cheatsheet, and pointers to the practice tests in `guide_en.MD` ([Paul Larionov's repo](https://github.com/paullarionov/claude-certified-architect)) are in [`revision/capstone-and-exam-prep.md`](revision/capstone-and-exam-prep.md).
 
 ---
 
