@@ -13,8 +13,17 @@ Use these for fast review; use the `src/` exercises for hands-on practice.
 | 1 — Claude API Fundamentals | [module-01-api-fundamentals.md](module-01-api-fundamentals.md) | Foundations (all) |
 | 2 — Tools and `tool_use` | [module-02-tools.md](module-02-tools.md) | D2, D4 |
 | 3 — Agent SDK and Agentic Loops | [module-03-agent-sdk.md](module-03-agent-sdk.md) | D1 |
-
-_Modules 4–13 + capstone notes land here as the course progresses._
+| 4 — Model Context Protocol (MCP) | [module-04-mcp.md](module-04-mcp.md) | D2 |
+| 5 — Claude Code Configuration | [module-05-claude-code.md](module-05-claude-code.md) | D3 |
+| 6 — Prompt Engineering | [module-06-prompt-engineering.md](module-06-prompt-engineering.md) | D4 |
+| 7 — Message Batches API | [module-07-batches.md](module-07-batches.md) | D4 |
+| 8 — Task Decomposition | [module-08-decomposition.md](module-08-decomposition.md) | D1 |
+| 9 — Escalation & Human-in-the-Loop | [module-09-escalation.md](module-09-escalation.md) | D5 |
+| 10 — Error Handling in Multi-Agent Systems | [module-10-error-handling.md](module-10-error-handling.md) | D5 |
+| 11 — Context Management | [module-11-context-mgmt.md](module-11-context-mgmt.md) | D5 |
+| 12 — Preserving Provenance | [module-12-provenance.md](module-12-provenance.md) | D5 |
+| 13 — Claude Code Built-in Tools | [module-13-claude-code-tools.md](module-13-claude-code-tools.md) | D2, D3 |
+| Capstone — Multi-Agent Research Network | [capstone-and-exam-prep.md](capstone-and-exam-prep.md) | All |
 
 ## Exam at a glance
 

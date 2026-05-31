@@ -4,6 +4,8 @@ Hands-on training repo for the **Claude Certified Architect — Foundations** ce
 
 One module at a time. Each module has a short theory briefing, a set of runnable coding exercises, and a quick quiz. By the end, the `src/` tree becomes a working multi-agent research network.
 
+> **Source guide.** The exam guide that drives this lab's curriculum (`guide_en.MD` in this folder) comes from the community-maintained repo by Paul Larionov: <https://github.com/paullarionov/claude-certified-architect>. The lab here is a hands-on companion built around that guide — every module maps to a chapter / domain section of the guide, and the **Exam traps** rows in each `revision/module-*.md` file are condensed from it.
+
 ## Prerequisites
 
 - Node.js 18+ (uses native `fetch` and ES modules)
@@ -190,6 +192,194 @@ A server publishing **one tool + two resources** (orders catalog, orders schema)
 
 ---
 
+---
+
+## Module 5 — Claude Code Configuration and Workflows
+
+A configuration-heavy module about **Claude Code itself** — the CLI tool that hosts agents in real workflows. Most deliverables are config files (no npm scripts) because the exam tests *which file goes where* and *which command for which symptom*. Lab artifacts live under `src/module-05-claude-code/` because the literal `.claude/` path is protected in this sandbox — content is identical to what would live there.
+
+### Project- and directory-level CLAUDE.md
+
+- [Root `CLAUDE.md`](CLAUDE.md) + [`standards/coding-style.md`](standards/coding-style.md) and [`standards/testing-requirements.md`](standards/testing-requirements.md) — project-level CLAUDE.md with `@path` imports.
+- [`src/module-03-agent-sdk/CLAUDE.md`](src/module-03-agent-sdk/CLAUDE.md) — a directory-level CLAUDE.md that auto-loads only when editing files in that directory.
+- [`examples/user-CLAUDE.md.example`](examples/user-CLAUDE.md.example) — illustration of what a `~/.claude/CLAUDE.md` (user-level) would look like.
+
+### Conditional rule loading
+
+- [`src/module-05-claude-code/rules/testing.md`](src/module-05-claude-code/rules/testing.md), [`rules/mcp.md`](src/module-05-claude-code/rules/mcp.md), [`rules/agent-loop.md`](src/module-05-claude-code/rules/agent-loop.md) — `.claude/rules/` files with YAML `paths` frontmatter that load only when matching files are edited.
+
+### Slash commands and skills
+
+- [`commands/review.md`](src/module-05-claude-code/commands/review.md) — legacy `.claude/commands/` format.
+- [`skills/code-audit/SKILL.md`](src/module-05-claude-code/skills/code-audit/SKILL.md) and [`skills/test-gen/SKILL.md`](src/module-05-claude-code/skills/test-gen/SKILL.md) — current `.claude/skills/` format with `context: fork`, `allowed-tools`, `argument-hint` frontmatter.
+
+### Workflow references
+
+- [`planning-mode-cheatsheet.md`](src/module-05-claude-code/planning-mode-cheatsheet.md) — when to plan vs directly execute, plus the Explore subagent.
+- [`compact-and-memory.md`](src/module-05-claude-code/compact-and-memory.md) — `/compact` (lossy summary) vs `/memory` (cross-session persistence).
+- [`sessions.md`](src/module-05-claude-code/sessions.md) — `--resume` vs `fork_session` vs starting fresh.
+- [`ci-examples/github-actions-review.yml`](src/module-05-claude-code/ci-examples/github-actions-review.yml) + [`ci-examples/notes.md`](src/module-05-claude-code/ci-examples/notes.md) — headless CLI in CI: `-p`, JSON output, schema validation, reviewer-≠-generator, dedup.
+
+### Key takeaways
+
+- CLAUDE.md hierarchy: user (`~/.claude/CLAUDE.md`) → project (root or `.claude/CLAUDE.md`) → directory. More specific scopes win.
+- `@path` imports compose monoliths into focused files; `.claude/rules/` with `paths` glob loads rules conditionally so irrelevant ones don't burn context.
+- Skills (`.claude/skills/foo/SKILL.md`) are on-demand tasks with `context: fork`, `allowed-tools` (security), `argument-hint`. CLAUDE.md is always-loaded standards.
+- Plan first for large/ambiguous changes; direct-execute for clear local fixes. Use the Explore subagent to keep verbose investigation out of the main context.
+- `/compact` is lossy (Module 1.6 drift on demand); `/memory` writes durable cross-session context.
+- CI invocation must be `claude -p` (headless), output as JSON validated by schema, with a fresh review session distinct from any generation session.
+- `--resume` reuses a session; `fork_session` branches from shared context; **start fresh** when files have drifted since last time.
+
+---
+
+---
+
+## Module 6 — Prompt Engineering
+
+Six prompting techniques that operate purely on how the prompt is written — no SDK or architecture changes. The unifying thread: **specificity beats vagueness, and the model reasons over what you put in the prompt**.
+
+### `npm run m6:fewshot`
+
+Few-shot prompting with informal cooking measurements. Same `tool_use` schema both runs; only the examples differ.
+*What you'll observe:* zero-shot and few-shot often look similar when the schema is strong — see `m6:classify` for the dramatic version.
+
+### `npm run m6:classify`
+
+Few-shot **where it dramatically matters** — classify bug reports into a team-specific P0/P1/P2/P3 scheme with no enum on `priority`.
+*What you'll observe:* zero-shot drifts to "critical/high/medium/low" or to the wrong P-routing; few-shot locks both the labels and the team's routing logic.
+
+### `npm run m6:chain`
+
+Prompt chaining — a three-step code review: analyze `auth.ts` → analyze `database.ts` → integration pass over both prior outputs.
+*What you'll observe:* the SQL-injection issue at the file boundary surfaces clearly in step 3; per-file steps stay focused thanks to no attention dilution.
+
+### `npm run m6:correct`
+
+Self-correction — the model extracts both the printed `TOTAL` and the line-item sum, flagging `conflict_detected: true` when they disagree.
+*What you'll observe:* the inconsistent invoice surfaces a conflict in one call; the consistent invoice returns `conflict_detected: false`.
+
+### Key takeaways
+
+- Few-shot teaches conventions the schema can't encode; pair with normalization rules in the prompt for value consistency.
+- Vague instructions produce inconsistent outputs; explicit numbered FLAG + DO-NOT-FLAG criteria + a canonical example per tier pin the decision procedure.
+- Prompt chaining fixes attention dilution for multi-input tasks. Chain when steps are fixed; coordinator-decompose when steps depend on runtime findings.
+- The interview pattern needs `tool_choice: "auto"` — forced tool-use prevents the model from emitting a clarifying-question text turn.
+- Retry-with-feedback helps with format, structural, and arithmetic errors; **does not** help when source data is genuinely absent — escalate instead.
+- Self-correction (extract stated + computed, flag conflict) beats retry when the source itself may be inconsistent.
+
+---
+
+---
+
+## Module 7 — Message Batches API
+
+`npm run m7:batches` — submits 5 ticket-classification requests in a single batch with meaningful `custom_id`s, polls until ended, prints results correlated back to the original tickets. Demonstrates the 50%-discount async API, the `custom_id` correlation contract, and the *re-submit only failed ids* failure-handling pattern. Synchronous = human waiting; Batch = everything else.
+
+## Module 8 — Task Decomposition
+
+`npm run m8:passes` — single-pass vs multi-pass code review on a 3-file PR (`auth.ts`, `payments.ts`, `admin.ts`) with deliberate cross-file authorization holes. Single-pass tends to flag the SQL injection and stop; multi-pass surfaces the per-file local bugs AND the integration-level "deleteUser has no role check" / "refund trusts plain login" gaps. The cure for attention dilution.
+
+## Module 9 — Escalation and Human-in-the-Loop
+
+`npm run m9:escalate` — four scenarios run through one agent: explicit "get me a manager" → immediate escalation; competitor price match → policy gap, immediate escalation; damaged item → resolution attempt first; customer insists on a human → escalation. Each escalation produces a self-contained structured handoff JSON (the operator never sees the conversation).
+
+## Module 10 — Error Handling in Multi-Agent Systems
+
+`npm run m10:coverage` — same set of three subagent results (one partial failure). BAD synthesis silently drops the failed section; GOOD synthesis includes a `"PARTIAL COVERAGE — timeout"` annotation. Lesson: never silently hide a failed section; coverage annotations let the reader see exactly what's reliable.
+
+## Module 11 — Context Management
+
+`npm run m11:state` — researcher processes 5 items and persists state to JSON after each. The first run "crashes" at item 3. Re-run with `npm run m11:state -- -r` and the second pass reads the state file and resumes from item 4. Structured state persistence + manifest = crash recovery in <100 lines.
+
+## Module 12 — Preserving Provenance
+
+`npm run m12:prov` — synthesis on "AI in music streaming" from two findings with different dates and sources. BAD strips attribution and blends 8% / 12% into one confident-sounding paragraph; GOOD preserves both sources with dates inline and reframes the apparent conflict as plausible YoY growth (12.3 in action: dates turn "conflict" into "time series").
+
+## Module 13 — Claude Code Built-in Tools
+
+No build — Module 13 is a reference doc at [`src/module-13-claude-code-tools/README.md`](src/module-13-claude-code-tools/README.md) covering the **tool selection matrix** (Glob for filenames, Grep for content, Read/Write/Edit/Bash), the **incremental investigation strategy** (Grep → Read → Grep → Read → repeat, not bulk-read), and the **Read+Write fallback for Edit** when a snippet isn't unique.
+
+---
+
+---
+
+## Capstone — Multi-Agent Research Network
+
+`npm run capstone` — the Scenario-3 system from the exam guide, built end-to-end on the abstractions from Modules 1–13. A coordinator fans out 3 parallel researcher subagents that hit a real MCP server (`src/capstone/kb-server.js`), each returns claims with full provenance (source, date, methodology), a synthesizer compiles a structured report with coverage annotations, and the result is schema-validated with retry-with-feedback. State is persisted to `src/capstone/state.json` after every subagent.
+
+What you'll see in the logs:
+
+- `[hook PreToolUse]` lines from the coordinator's audit hook on every Task delegation.
+- Three researcher subagents starting close together → parallel spawn working.
+- `state.json` writes after each subagent completes.
+- A final report with **both** the 2023 MIA (8%) and 2024 Spotify (12%) music findings preserved with dates — the provenance-under-conflict pattern from Module 12.
+
+See [`src/capstone/README.md`](src/capstone/README.md) for the architecture diagram and the module-to-code mapping. Final exam prep, the symptom→diagnosis cheatsheet, and pointers to the practice tests in `guide_en.MD` are in [`revision/capstone-and-exam-prep.md`](revision/capstone-and-exam-prep.md).
+
+---
+
+## 🔭 Live agent-flow visualization
+
+Several exercises support an opt-in browser dashboard that streams events from the running agent network in real time. It shows the **network topology** (coordinator / subagents / tools as distinct node shapes), draws **animated arrows** as data flows between them, and gives you a click-to-expand **full event log** for every iteration, tool call, and subagent return.
+
+### Capstone — dashboard is ON by default
+
+The capstone always starts the dashboard because the visualization *is* the headline feature.
+
+```bash
+npm run capstone
+# then open http://localhost:3737/ during the 5-second startup pause
+```
+
+**Opt out** (e.g. on a headless CI box):
+
+```bash
+LIVE=0 npm run capstone
+```
+
+**Custom port:**
+
+```bash
+LIVE_PORT=8080 npm run capstone
+```
+
+### Other modules — opt in with `LIVE=1`
+
+These Agent-based exercises support the same dashboard. They're **off by default** (so the demos behave identically when you run them normally), and you enable them with `LIVE=1`:
+
+| Script | What you'll see in the dashboard |
+|---|---|
+| `LIVE=1 npm run m3:def`       | One agent's calls to its allowed tools (refund flow) |
+| `LIVE=1 npm run m3:coord`     | Coordinator dispatching to `researcher` and `writer` subagents, each with their own tool calls |
+| `LIVE=1 npm run m3:task`      | Parallel Task spawns: two researchers and a writer issued via one polymorphic Task tool |
+| `LIVE=1 npm run m3:hooks`     | An agent calling `lookup_order` / `process_refund` with `PreToolUse` interception visible in the log |
+| `LIVE=1 npm run m4:agent`     | An agent calling **MCP-discovered tools** (`get_order_status`) via stdio |
+| `LIVE=1 npm run m4:errors`    | Two separate agents each calling a different error-shape MCP tool |
+| `LIVE=1 npm run m4:resources` | One agent that already has the catalog resource preloaded — Q1 with **zero tool calls**, Q2 with a single tool call |
+
+All accept `LIVE_PORT` to override the port:
+
+```bash
+LIVE=1 LIVE_PORT=8080 npm run m3:task
+```
+
+When `LIVE=1`, each script:
+
+1. Starts a local HTTP+SSE server (default `http://localhost:3737/`).
+2. Pauses 5 seconds so you can open the browser.
+3. Runs the demo, streaming events to the dashboard in real time.
+4. Stays alive after the demo finishes so you can scroll the log. **Ctrl+C** to stop.
+
+The dashboard nodes are visually typed:
+
+- **Yellow circle** — coordinator
+- **Blue circle** — subagent
+- **Teal rounded rectangle (🔧)** — tool
+
+Arrows are color-coded by direction and kind: **yellow packet** = coordinator → subagent dispatch · **green packet** = subagent → coordinator return · **blue packet** = agent → tool call · **teal packet** = tool → agent result.
+
+---
+
 ## Running an exercise
 
 ```bash
@@ -198,9 +388,9 @@ npm run <script>     # e.g. npm run m1:hello
 
 Output goes to stdout. Each script reads `ANTHROPIC_API_KEY` from `.env` via `dotenv` — make sure your key is set before running.
 
-## What's next
+## Where to go next
 
-Modules 5–13 and the capstone are upcoming — each will land here with its own exercises and notes as the lab grows.
+All 13 modules and the capstone are in the tree. Run `npm run capstone` to watch the whole network light up end-to-end, skim the [revision notes](revision/README.md) before the exam, and dip back into any `npm run mN:slug` exercise when a concept needs a hands-on refresher.
 
 ## Revision notes
 
@@ -211,3 +401,13 @@ Concept refreshers for each completed module — read these before re-running th
 - [Module 2 — Tools and `tool_use`](revision/module-02-tools.md)
 - [Module 3 — Agent SDK and Agentic Loops](revision/module-03-agent-sdk.md)
 - [Module 4 — Model Context Protocol (MCP)](revision/module-04-mcp.md)
+- [Module 5 — Claude Code Configuration and Workflows](revision/module-05-claude-code.md)
+- [Module 6 — Prompt Engineering](revision/module-06-prompt-engineering.md)
+- [Module 7 — Message Batches API](revision/module-07-batches.md)
+- [Module 8 — Task Decomposition](revision/module-08-decomposition.md)
+- [Module 9 — Escalation and Human-in-the-Loop](revision/module-09-escalation.md)
+- [Module 10 — Error Handling in Multi-Agent Systems](revision/module-10-error-handling.md)
+- [Module 11 — Context Management](revision/module-11-context-mgmt.md)
+- [Module 12 — Preserving Provenance](revision/module-12-provenance.md)
+- [Module 13 — Claude Code Built-in Tools](revision/module-13-claude-code-tools.md)
+- [Capstone + Final Exam Prep](revision/capstone-and-exam-prep.md)
