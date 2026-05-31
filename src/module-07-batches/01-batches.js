@@ -84,11 +84,38 @@ async function main() {
   }
   console.log(`\nBatch ended. Counts:`, current.request_counts);
 
-  // STREAM the results. Each line in `.results()` is a per-request
-  // record; the custom_id field is how we correlate it to TICKETS.
+  // FETCH the results. The completed batch carries a `results_url`
+  // pointing to a JSONL endpoint. We fetch it directly with the API
+  // key — this is robust across SDK versions whose `.results()`
+  // iteration shape differs (e.g. v0.39's iterator was reported as
+  // "not async iterable" by Parth's run).
+  //
+  // Each JSONL line is a per-request record. `custom_id` is how we
+  // correlate the answer back to its TICKET — without it, results
+  // are an anonymous pile.
+  const finalBatch = await client.messages.batches.retrieve(batch.id);
+  if (!finalBatch.results_url) {
+    console.error("Batch has no results_url — cannot fetch results.");
+    process.exit(1);
+  }
+  const httpRes = await fetch(finalBatch.results_url, {
+    headers: {
+      "x-api-key": process.env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+  });
+  if (!httpRes.ok) {
+    console.error(`Failed to fetch results: HTTP ${httpRes.status}`);
+    console.error(await httpRes.text());
+    process.exit(1);
+  }
+  const jsonl = await httpRes.text();
   const indexed = new Map(TICKETS.map((t) => [t.id, t]));
+
   console.log(`\n--- Results (correlated via custom_id) ---`);
-  for await (const result of client.messages.batches.results(batch.id)) {
+  for (const line of jsonl.trim().split("\n")) {
+    if (!line) continue;
+    const result = JSON.parse(line);
     const original = indexed.get(result.custom_id);
     const head = `[${result.custom_id}] ${result.result?.type ?? "?"}`;
     if (result.result?.type === "succeeded") {
