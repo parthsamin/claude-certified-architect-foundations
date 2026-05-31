@@ -1,0 +1,88 @@
+# Example GitHub Actions workflow — Claude Code in CI for automated PR review.
+# In a real repo this lives at .github/workflows/claude-review.yml.
+# Mirrored here under src/module-05-claude-code/ci-examples/ for the lab.
+
+name: Claude PR review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          # Fetch the merge target so we can diff against it
+          fetch-depth: 0
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      # ---------------------------------------------------------------
+      # The CRITICAL line. Three things to notice:
+      #
+      #   1. `-p "<prompt>"`  Non-interactive (headless) mode. This is
+      #                       the ONLY correct way to run Claude in CI.
+      #                       Interactive mode would block waiting for
+      #                       user input that never comes.
+      #
+      #   2. --output-format json   Output structured JSON to stdout.
+      #                             A subsequent step parses it.
+      #
+      #   3. --json-schema '...'    Validate the output shape so the
+      #                             parser never sees malformed JSON.
+      # ---------------------------------------------------------------
+      - name: Run Claude review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p "Review the diff against origin/main for security issues, \
+                     correctness bugs, and missing test coverage. \
+                     Report ONLY genuine issues — not style nits. \
+                     Each issue must include file, line, severity, and a fix sketch." \
+            --output-format json \
+            --json-schema '{
+              "type": "object",
+              "properties": {
+                "issues": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "file":     { "type": "string" },
+                      "line":     { "type": "integer" },
+                      "severity": { "type": "string", "enum": ["block", "high", "medium", "low"] },
+                      "message":  { "type": "string" },
+                      "fix":      { "type": "string" }
+                    },
+                    "required": ["file", "line", "severity", "message"]
+                  }
+                }
+              },
+              "required": ["issues"]
+            }' \
+            > review.json
+
+      - name: Post inline PR comments
+        # Parse review.json and post each issue as an inline review
+        # comment on the PR via the GitHub API.
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { issues } = JSON.parse(fs.readFileSync('review.json', 'utf8'));
+            for (const i of issues) {
+              await github.rest.pulls.createReviewComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                pull_number: context.issue.number,
+                body: `**[${i.severity.toUpperCase()}]** ${i.message}\n\n${i.fix ?? ''}`,
+                path: i.file,
+                line: i.line,
+                commit_id: context.payload.pull_request.head.sha,
+              });
+            }

@@ -23,7 +23,18 @@
     "m4:config": "node src/module-04-mcp/02-config.js",
     "m4:agent": "node src/module-04-mcp/03-agent-mcp.js",
     "m4:errors": "node src/module-04-mcp/04-errors.js",
-    "m4:resources": "node src/module-04-mcp/05-resources.js"
+    "m4:resources": "node src/module-04-mcp/05-resources.js",
+    "m6:fewshot": "node src/module-06-prompt-engineering/01-few-shot.js",
+    "m6:classify": "node src/module-06-prompt-engineering/01b-few-shot-classify.js",
+    "m6:chain": "node src/module-06-prompt-engineering/02-prompt-chaining.js",
+    "m6:correct": "node src/module-06-prompt-engineering/03-self-correction.js",
+    "m7:batches": "node src/module-07-batches/01-batches.js",
+    "m8:passes": "node src/module-08-decomposition/01-multi-pass.js",
+    "m9:escalate": "node src/module-09-escalation/01-escalation.js",
+    "m10:coverage": "node src/module-10-error-handling/01-coverage.js",
+    "m11:state": "node src/module-11-context-mgmt/01-state-persistence.js",
+    "m12:prov": "node src/module-12-provenance/01-provenance.js",
+    "capstone": "node src/capstone/research-network.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

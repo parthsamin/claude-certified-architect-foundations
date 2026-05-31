@@ -1,0 +1,39 @@
+# Example — what a user-level CLAUDE.md looks like
+
+> **DO NOT** copy this to `~/.claude/CLAUDE.md` blindly — it would apply
+> to all your Claude Code sessions on this machine. This file is for
+> illustration of the user-level (Level 1) format described in Module 5
+> Concept 5.1.
+
+A user-level `CLAUDE.md` lives at `~/.claude/CLAUDE.md`, is **not** in any
+project's version control, and contains things specific to *you*, regardless
+of which project you're in.
+
+## Example contents
+
+```markdown
+# Personal preferences
+
+- I prefer terse, code-first responses. Lead with the change, then explain.
+- When summarizing a diff, don't restate every line — only highlight risks.
+- Use my preferred git workflow: rebase, never merge.
+- Default to TypeScript whenever a language choice is open.
+- I run on macOS — use macOS-appropriate shell commands.
+
+# Editor preferences
+
+- Use 2-space indent unless the project's CLAUDE.md or .editorconfig says otherwise.
+- Prefer named exports over default exports.
+
+# Working style
+
+- Ask before making more than 10 file changes in a single response.
+- Show me diffs in unified format.
+```
+
+## Hierarchy reminder
+
+User-level rules (this file) are overlaid by project-level rules (a project's
+`CLAUDE.md`), which are in turn overlaid by directory-level rules. More
+specific scopes WIN on conflicts — a project's coding-style preference
+overrides your personal one when you're working in that project.
