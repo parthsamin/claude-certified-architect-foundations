@@ -68,8 +68,12 @@ realistic questions**.
 
 - Passing score: **720** (scale 100–1000).
 - **No guessing penalty** — answer every question, even if unsure.
-- 4 of 8 scenarios randomly selected per exam.
+- **4 of 6 scenarios** randomly selected per exam. (Per the official Anthropic guide — the community guide had said "of 8" with two extra scenarios; the official scenario set is 6.)
 - Multiple choice, 1 correct of 4 options.
+
+### Official-guide deltas
+
+See [`official-guide-deltas.md`](official-guide-deltas.md) — 13 patterns the Anthropic official guide emphasizes more than the community guide our curriculum was built around. Three high-priority deltas are reflected in the symptom→diagnosis cheatsheet below:
 
 ### Symptom→diagnosis cheatsheet
 
@@ -101,6 +105,11 @@ A condensed pass over the highest-frequency trap patterns:
 | Long investigation crashes, restart from scratch | Structured state persistence (11.6) |
 | Multi-source report has confident numbers, no citations | Attribution loss (12.1) |
 | 10% vs 15% across sources called a contradiction | Check dates — could be growth (12.3) |
+| Agent skips required prerequisite tool; financial consequences | **Programmatic prerequisite gate**, not prompt (Δ1) |
+| Frequent simple lookups round-trip through coordinator and tank latency | **Scoped cross-role tool** for the common path (Δ2) |
+| One generic tool does too many things; descriptions blur | **Split into purpose-specific tools** (Δ3) |
+| Agent prefers built-in Grep over the MCP tool you wrote | Strengthen the MCP description with **unique-data justification** (Δ4) |
+| Aggregate 97% accuracy hides a doc-type with 60% accuracy | **Stratified random sampling** (Δ8) |
 
 Carry that table into the exam mentally. Most questions will resolve
 into one of those rows.

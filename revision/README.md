@@ -24,6 +24,7 @@ Use these for fast review; use the `src/` exercises for hands-on practice.
 | 12 — Preserving Provenance | [module-12-provenance.md](module-12-provenance.md) | D5 |
 | 13 — Claude Code Built-in Tools | [module-13-claude-code-tools.md](module-13-claude-code-tools.md) | D2, D3 |
 | Capstone — Multi-Agent Research Network | [capstone-and-exam-prep.md](capstone-and-exam-prep.md) | All |
+| Official-guide deltas | [official-guide-deltas.md](official-guide-deltas.md) | All — patterns the official Anthropic guide emphasizes more than the community guide |
 
 ## Exam at a glance
 
@@ -36,4 +37,4 @@ Use these for fast review; use the `src/` exercises for hands-on practice.
 | 5. Context management and reliability | 15% |
 
 Format: multiple choice (1 of 4), 100–1000 scale, **passing 720**, no guessing
-penalty (answer everything), 4 of 8 scenarios randomly selected.
+penalty (answer everything), **4 of 6 scenarios** randomly selected.
