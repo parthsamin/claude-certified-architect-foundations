@@ -77,9 +77,50 @@ First run: full pipeline end-to-end. State written to
 `src/capstone/state.json` after each step. Re-run after deleting the
 state file for a fresh run.
 
+## Two editions: hand-rolled vs the real Agent SDK
+
+The same network is built two ways — pick the lens you want:
+
+| | `npm run capstone` | `npm run capstone:sdk` |
+|---|---|---|
+| Built on | **Client SDK** (`@anthropic-ai/sdk`) + the hand-rolled `Agent` class | the real **Agent SDK** (`@anthropic-ai/claude-agent-sdk`, `query()`) |
+| The loop | you write it (`agent.js`) | the SDK runs it |
+| Subagents | custom `Task` tool + `subagent_type` enum | `options.agents{}` + the built-in `Agent` tool |
+| MCP | `mcp-host.js` translation + a hand-spawned client | native `options.mcpServers` (stdio) |
+| `record_report` | a tool on the synthesizer `Agent` | an **in-process** custom MCP tool (`createSdkMcpServer` + `tool()`) whose handler validates and drives retry |
+| Live dashboard | `Tracer` calls inside `agent.js` | the SDK's **hooks** (`SubagentStart/Stop`, `PreToolUse/PostToolUse`) bridged into the *same* `Tracer` events |
+
+Both render the identical live-flow topology (coordinator → 3 researchers
+→ KB tool → synthesizer → `record_report`) because both feed the same
+`Tracer` → `live-server.js` → dashboard. The SDK edition is the capstone
+counterpart of the Module-3 bridge (`m3:sdk`); see
+[`revision/agent-sdk-vs-client-sdk.md`](../../revision/agent-sdk-vs-client-sdk.md)
+for the concept-by-concept mapping.
+
+> 📖 **Step-by-step build guide:** for a detailed, code-by-code walkthrough of
+> the Agent-SDK edition — how `query()` runs the loop, how subagents and the
+> in-process `record_report` tool work, and how the SDK's hooks are bridged into
+> the dashboard — read
+> [`agent-sdk-walkthrough.md`](agent-sdk-walkthrough.md).
+
+```bash
+npm run capstone:sdk          # dashboard ON by default
+LIVE=0 npm run capstone:sdk   # headless (no dashboard)
+```
+
+State for this edition is written to `state-sdk.json`; traces to
+`trace-sdk.json` / `trace-sdk.mmd` (all git-ignored).
+
 ## Files
 
 - `kb-server.js` — MCP server publishing `search_knowledge_base`
-  (tool) and `kb://catalog` (resource).
-- `research-network.js` — the orchestrator: coordinator + three
+  (tool) and `kb://catalog` (resource). Shared by both editions.
+- `research-network.js` — hand-rolled orchestrator: coordinator + three
   subagent definitions + validation + state persistence.
+- `research-network-sdk.js` — Agent-SDK orchestrator: one `query()`,
+  `options.agents{}` subagents, native MCP, an in-process `record_report`
+  tool, and a hooks→`Tracer` bridge for the live dashboard.
+- `agent-sdk-walkthrough.md` — detailed step-by-step build guide for
+  `research-network-sdk.js`, explaining every section of the code.
+- `tracer.js` / `live-server.js` / `live-dashboard.html` — the live-flow
+  visualization, reused unchanged by both editions.

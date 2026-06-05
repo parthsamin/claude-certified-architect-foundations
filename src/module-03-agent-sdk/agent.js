@@ -1,7 +1,16 @@
 // ===================================================================
 // agent.js — the shared Agent abstraction for Module 3 onward.
 // ===================================================================
-// Mirrors the Claude Agent SDK's AgentDefinition shape:
+// This is a HAND-ROLLED agent loop built on the **Client SDK**
+// (`@anthropic-ai/sdk`, the Messages API client). It is NOT the real
+// **Agent SDK** (`@anthropic-ai/claude-agent-sdk`) — see `m3:sdk`
+// (06-real-agent-sdk.js) for that, and revision/agent-sdk-vs-client-sdk.md
+// for the concept-by-concept mapping.
+//
+// It mirrors the *concept* of an Agent definition, but the field names
+// here are the lab's own. The real Agent SDK's AgentDefinition is
+// `{ description, prompt, tools }` — note `prompt` (not `systemPrompt`)
+// and `tools` (not `allowedTools`). The lab's shape:
 //
 //   new Agent({
 //     name,            // identifier — used in logs, future routing

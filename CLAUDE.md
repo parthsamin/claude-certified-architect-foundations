@@ -31,8 +31,14 @@ Dependency list is in @package.json
 
 ## Agent conventions (lab-specific)
 
+- Two SDKs, kept distinct: the **Client SDK** (`@anthropic-ai/sdk`, the
+  Messages API client) is what the lab hand-rolls the agent loop on; the
+  real **Agent SDK** (`@anthropic-ai/claude-agent-sdk`) runs the loop for you
+  and appears only in `m3:sdk` (`06-real-agent-sdk.js`). See
+  `revision/agent-sdk-vs-client-sdk.md`. Don't conflate the two in prose.
 - The shared `Agent` abstraction lives at `src/module-03-agent-sdk/agent.js`.
-  All Module 3+ exercises import from it; do not duplicate the loop logic.
+  It is the hand-rolled Client-SDK loop. All Module 3+ exercises (except
+  `m3:sdk`) import from it; do not duplicate the loop logic.
 - Tool definitions follow Anthropic API shape: `{ name, description, input_schema }`.
 - MCP tool definitions arrive as `{ name, description, inputSchema }` — translate
   to `input_schema` at the boundary (`src/module-04-mcp/mcp-host.js`).
