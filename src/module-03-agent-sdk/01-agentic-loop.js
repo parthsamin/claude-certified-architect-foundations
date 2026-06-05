@@ -1,12 +1,14 @@
 // ===================================================================
 // Module 3 · Concept 3.1 — The Agentic Loop, Formalized
 // ===================================================================
-// You already built an agentic loop by hand in Module 1. The Claude
-// Agent SDK formalizes that exact pattern as a reusable abstraction:
-// configure an agent once, hand it a task, and the SDK runs the loop
-// for you. To make the architecture crystal clear (and avoid forcing
-// the Claude Code CLI as a dependency), we re-implement the SDK's
-// `AgentDefinition + run-loop` shape ourselves over the raw API.
+// You already built an agentic loop by hand in Module 1. The real
+// **Agent SDK** (`@anthropic-ai/claude-agent-sdk`) formalizes that exact
+// pattern: configure an agent once, hand it a task, and the SDK runs the
+// loop for you. To make the architecture crystal clear, we instead keep
+// hand-rolling on the **Client SDK** (`@anthropic-ai/sdk`, the raw
+// Messages API) — re-implementing the `AgentDefinition + run-loop` shape
+// ourselves so the mechanics stay visible. Run `npm run m3:sdk` to see
+// the real Agent SDK; revision/agent-sdk-vs-client-sdk.md maps the two.
 //
 // What you'll see by the end of Module 3:
 //   class Agent { name, description, systemPrompt, tools, handlers }

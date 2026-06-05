@@ -11,4 +11,7 @@ RESUME.md
 src/capstone/state.json
 src/capstone/trace.json
 src/capstone/trace.mermaid
+src/capstone/state-sdk.json
+src/capstone/trace-sdk.json
+src/capstone/trace-sdk.mmd
 src/module-11-context-mgmt/researcher-state.json

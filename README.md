@@ -135,6 +135,8 @@ _What you'll observe:_ invoice extraction across attempts — attempt 1 has a wr
 
 Formalize the hand-rolled loop into a reusable `Agent` abstraction, then compose multiple agents into a hub-and-spoke system: a coordinator that decomposes work, delegates to subagents via a `Task` tool, parallelizes independent work, and gates dangerous tool calls with deterministic hooks. By the end you have the building blocks of the capstone.
 
+> **Client SDK vs Agent SDK.** Exercises `m3:loop`–`m3:hooks` hand-roll the loop on the **Client SDK** (`@anthropic-ai/sdk`, the Messages API client) so the mechanics stay visible — that is, *you* write the loop. The exam also names the real **Agent SDK** (`@anthropic-ai/claude-agent-sdk`), a different package that runs the loop for you via `query()`. `m3:sdk` (below) is the bridge that runs the real package; the [Client SDK vs Agent SDK reference](revision/agent-sdk-vs-client-sdk.md) maps every concept across.
+
 ### `npm run m3:loop`
 
 The agentic loop, formalized. The only reliable completion signal is `stop_reason === "end_turn"`; iteration caps must throw, not silently "finish".
@@ -160,9 +162,15 @@ _What you'll observe:_ timestamped `Task -> X START/DONE` lines. Whether they ov
 Deterministic interception: `PreToolUse` to block, `PostToolUse` to normalize/redact.
 _What you'll observe:_ a refund agent asked to issue $199 (allowed) and $999 (blocked by hook). The server-side `refundLog` shows only the $199 — the $999 was blocked in code before the handler ran. Date strings returned by `lookup_order` are normalized to ISO 8601 by the post-hook.
 
+### `npm run m3:sdk`
+
+The bridge to the **real** Agent SDK (`@anthropic-ai/claude-agent-sdk`) — everything above hand-rolls the loop; this one calls `query({ prompt, options })` and lets Claude run it. Shows `allowedTools` with built-in tools (Read/Glob/Grep), a real `PreToolUse` deny hook, and a subagent via `options.agents{}` + the built-in `Agent` tool.
+_What you'll observe:_ `[hook PreToolUse]` audit lines on every tool call, a `DENY Bash` line when the model reaches for the shell, and a `SubagentStop` line when the spawned summarizer finishes.
+_Heavier than the rest:_ the SDK spawns the bundled Claude Code binary as a subprocess and needs network + `ANTHROPIC_API_KEY`. Run `npm install` first; if it can't run it exits cleanly with a clear message.
+
 ### Key takeaways
 
-- An agent is a `while` loop around the Messages API; the SDK packages that as `agent.run(prompt)`. The only reliable completion signal is `stop_reason === "end_turn"`.
+- An agent is a `while` loop around the Messages API. On the **Client SDK** you write it (this lab's `agent.run(prompt)`); the real **Agent SDK** packages it as `query({prompt, options})`. The only reliable completion signal is `stop_reason === "end_turn"`.
 - `allowedTools` is **deterministic** privilege control; a system prompt forbidding a tool is **probabilistic**. Withhold the tool, don't trust the prompt.
 - Hub-and-spoke: coordinator decomposes → decides → delegates → aggregates → validates → communicates. Subagents have **isolated context** — what the coordinator doesn't pass, the subagent can't see.
 - The `Task` tool is the polymorphic delegation primitive. Parallel spawning happens when the coordinator emits multiple `tool_use` blocks in one assistant turn — opportunistic, not automatic.
@@ -326,7 +334,13 @@ What you'll see in the logs:
 - `state.json` writes after each subagent completes.
 - A final report with **both** the 2023 MIA (8%) and 2024 Spotify (12%) music findings preserved with dates — the provenance-under-conflict pattern from Module 12.
 
-See [`src/capstone/README.md`](src/capstone/README.md) for the architecture diagram and the module-to-code mapping. Final exam prep, the symptom→diagnosis cheatsheet, and pointers to the practice tests in `guide_en.MD` ([Paul Larionov's repo](https://github.com/paullarionov/claude-certified-architect)) are in [`revision/capstone-and-exam-prep.md`](revision/capstone-and-exam-prep.md).
+### `npm run capstone:sdk` — the same network on the real Agent SDK
+
+The capstone also ships in an **Agent-SDK edition** — the counterpart of the Module-3 bridge (`m3:sdk`). It builds the identical coordinator → 3 researchers → KB → synthesizer network, but on the real `@anthropic-ai/claude-agent-sdk`: one `query()` runs the whole loop, subagents are declared in `options.agents{}` and spawned by the built-in `Agent` tool, the KB plugs in via native `options.mcpServers`, and `record_report` is an in-process custom MCP tool whose handler validates and drives retry-with-feedback. The live dashboard still works — the SDK's hooks (`SubagentStart/Stop`, `PreToolUse/PostToolUse`) are bridged into the same `Tracer` events, so you get the identical animated topology. State → `state-sdk.json`. See the [Client SDK vs Agent SDK reference](revision/agent-sdk-vs-client-sdk.md) for the full mapping.
+
+> 📖 **Want to build it yourself?** [`src/capstone/agent-sdk-walkthrough.md`](src/capstone/agent-sdk-walkthrough.md) is a detailed, step-by-step, code-by-code guide to the Agent-SDK capstone — from imports to the hooks→dashboard bridge.
+
+See [`src/capstone/README.md`](src/capstone/README.md) for the architecture diagram, the two editions side-by-side, and the module-to-code mapping. Final exam prep, the symptom→diagnosis cheatsheet, and pointers to the practice tests in `guide_en.MD` ([Paul Larionov's repo](https://github.com/paullarionov/claude-certified-architect)) are in [`revision/capstone-and-exam-prep.md`](revision/capstone-and-exam-prep.md).
 
 ---
 
@@ -340,10 +354,11 @@ Several exercises support an opt-in browser dashboard that streams events from t
 
 ### Capstone — dashboard is ON by default
 
-The capstone always starts the dashboard because the visualization *is* the headline feature.
+The capstone always starts the dashboard because the visualization *is* the headline feature. Both editions support it — the hand-rolled `capstone` and the real-Agent-SDK `capstone:sdk` render the identical topology (the SDK edition bridges its hooks into the same event stream).
 
 ```bash
-npm run capstone
+npm run capstone        # hand-rolled (Client SDK)
+npm run capstone:sdk    # real Agent SDK — same live flow
 # then open http://localhost:3737/ during the 5-second startup pause
 ```
 
@@ -351,6 +366,7 @@ npm run capstone
 
 ```bash
 LIVE=0 npm run capstone
+LIVE=0 npm run capstone:sdk
 ```
 
 **Custom port:**
@@ -426,4 +442,5 @@ Concept refreshers for each completed module — read these before re-running th
 - [Module 11 — Context Management](revision/module-11-context-mgmt.md)
 - [Module 12 — Preserving Provenance](revision/module-12-provenance.md)
 - [Module 13 — Claude Code Built-in Tools](revision/module-13-claude-code-tools.md)
+- [Reference — Client SDK vs Agent SDK](revision/agent-sdk-vs-client-sdk.md)
 - [Capstone + Final Exam Prep](revision/capstone-and-exam-prep.md)

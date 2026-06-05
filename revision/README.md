@@ -24,6 +24,7 @@ Use these for fast review; use the `src/` exercises for hands-on practice.
 | 12 — Preserving Provenance | [module-12-provenance.md](module-12-provenance.md) | D5 |
 | 13 — Claude Code Built-in Tools | [module-13-claude-code-tools.md](module-13-claude-code-tools.md) | D2, D3 |
 | Capstone — Multi-Agent Research Network | [capstone-and-exam-prep.md](capstone-and-exam-prep.md) | All |
+| Reference — Client SDK vs Agent SDK | [agent-sdk-vs-client-sdk.md](agent-sdk-vs-client-sdk.md) | D1 — maps the lab's hand-rolled loop to the real `@anthropic-ai/claude-agent-sdk` |
 | Official-guide deltas | [official-guide-deltas.md](official-guide-deltas.md) | All — patterns the official Anthropic guide emphasizes more than the community guide |
 
 ## Exam at a glance

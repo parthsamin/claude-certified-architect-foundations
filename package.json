@@ -19,6 +19,7 @@
     "m3:coord": "node src/module-03-agent-sdk/03-coordinator.js",
     "m3:task": "node src/module-03-agent-sdk/04-task-tool.js",
     "m3:hooks": "node src/module-03-agent-sdk/05-hooks.js",
+    "m3:sdk": "node src/module-03-agent-sdk/06-real-agent-sdk.js",
     "m4:mcp": "node src/module-04-mcp/01-mcp-client.js",
     "m4:config": "node src/module-04-mcp/02-config.js",
     "m4:agent": "node src/module-04-mcp/03-agent-mcp.js",
@@ -34,10 +35,12 @@
     "m10:coverage": "node src/module-10-error-handling/01-coverage.js",
     "m11:state": "node src/module-11-context-mgmt/01-state-persistence.js",
     "m12:prov": "node src/module-12-provenance/01-provenance.js",
-    "capstone": "node src/capstone/research-network.js"
+    "capstone": "node src/capstone/research-network.js",
+    "capstone:sdk": "node src/capstone/research-network-sdk.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.165",
+    "@anthropic-ai/sdk": "^0.100.1",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "dotenv": "^16.4.5"
   }
