@@ -53,6 +53,12 @@ cp .env.example .env       # then paste your real ANTHROPIC_API_KEY into .env
 
 ---
 
+## For Product Managers
+
+Not here to write code? Start with the **[Product Manager's Cheat Sheet](docs/pm-agent-cheatsheet.md)** — a scannable, decision-focused guide to building, thinking about, and managing AI agents with Claude. It covers the *what-to-build* decision frameworks (single prompt → workflow → agent → multi-agent, and which Claude surface to build on), a plain-English glossary of engineer-speak, the metrics/KPIs to put on a dashboard, and the risk/guardrail/cost levers that matter — each cross-linked to a 2-minute runnable demo in this lab.
+
+---
+
 ## Module 1 — Claude API Fundamentals
 
 Build a mental model of the raw Claude API: how a request is shaped, why the API is stateless, how `stop_reason` drives every agent loop, and how the context window fills up. After this module you can write a minimal agent loop from scratch without an SDK.

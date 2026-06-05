@@ -52,3 +52,7 @@ Claude, across **Claude Code**, the **Claude Agent SDK**, the **Claude API**, an
 - [Enroll at anthropic.skilljar.com](https://anthropic.skilljar.com/) — a **practice exam** is available once enrolled.
 
 The exam is currently **open to partner organizations only**.
+
+## Audience guides
+
+- [Product Manager's Cheat Sheet](../docs/pm-agent-cheatsheet.md) — a non-code, decision-focused reference for building, thinking about, and managing AI agents with Claude (decision frameworks, glossary, metrics/KPIs, risk/guardrail/cost levers), cross-linked to the lab's runnable demos.
