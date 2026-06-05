@@ -6,6 +6,18 @@ One module at a time. Each module has a short theory briefing, a set of runnable
 
 > **Source guide.** The exam guide that drives this lab's curriculum (`guide_en.MD`) lives in the community-maintained repo by Paul Larionov: <https://github.com/paullarionov/claude-certified-architect>. It is **not** vendored into this repo — read it at the source. The lab here is a hands-on companion built around that guide — every module maps to a chapter / domain section of the guide, and the **Exam traps** rows in each `revision/module-*.md` file are condensed from it.
 
+## About the exam
+
+The **Claude Certified Architect – Foundations** certification validates that practitioners can make informed decisions about tradeoffs when implementing real-world solutions with Claude. It tests foundational knowledge across **Claude Code**, the **Claude Agent SDK**, the **Claude API**, and the **Model Context Protocol (MCP)** — the core technologies used to build production-grade applications with Claude.
+
+- **Official Exam Guide (PDF):** [Claude Certified Architect – Foundations Certification Exam Guide](https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F8lsy243ftffjjy1cx9lm3o2bw%2Fpublic%2F1773274827%2FClaude+Certified+Architect+%E2%80%93+Foundations+Certification+Exam+Guide.pdf)
+- **FAQ (PDF):** [Claude Certified Architect – Foundations (CCA-F) FAQs](https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F8lsy243ftffjjy1cx9lm3o2bw%2Fpublic%2F1773276532%2FClaude+Certified+Architect+-+Foundations+%28CCA-F%29+FAQs+%281%29.pdf)
+- **Enroll / learning platform:** <https://anthropic.skilljar.com/>
+
+Once enrolled, you can also take a **practice exam** calibrated to the same difficulty as the real test.
+
+> **Availability.** The exam is currently **open to partner organizations only**.
+
 ## Prerequisites
 
 - Node.js 18+ (uses native `fetch` and ES modules)

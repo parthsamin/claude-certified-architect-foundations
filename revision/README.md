@@ -38,3 +38,16 @@ Use these for fast review; use the `src/` exercises for hands-on practice.
 
 Format: multiple choice (1 of 4), 100–1000 scale, **passing 720**, no guessing
 penalty (answer everything), **4 of 6 scenarios** randomly selected.
+
+## Official resources
+
+The **Claude Certified Architect – Foundations** certification validates that you
+can make informed tradeoff decisions when building real-world solutions with
+Claude, across **Claude Code**, the **Claude Agent SDK**, the **Claude API**, and
+**MCP**.
+
+- [Official Exam Guide (PDF)](https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F8lsy243ftffjjy1cx9lm3o2bw%2Fpublic%2F1773274827%2FClaude+Certified+Architect+%E2%80%93+Foundations+Certification+Exam+Guide.pdf)
+- [FAQ (PDF)](https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F8lsy243ftffjjy1cx9lm3o2bw%2Fpublic%2F1773276532%2FClaude+Certified+Architect+-+Foundations+%28CCA-F%29+FAQs+%281%29.pdf)
+- [Enroll at anthropic.skilljar.com](https://anthropic.skilljar.com/) — a **practice exam** is available once enrolled.
+
+The exam is currently **open to partner organizations only**.
